@@ -201,6 +201,14 @@ cython_debug/
 .cursorignore
 .cursorindexingignore
 
+# --- Node.js additions ---
+node_modules/
+npm-debug.log*
+dist/
+build/
+.env
+.env.local
+
 # Marimo
 marimo/_static/
 marimo/_lsp/
