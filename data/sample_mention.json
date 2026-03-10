@@ -1,23 +1,78 @@
-JSON
-{
-  "source_platform": "facebook",      // facebook, twitter, news, tiktok
-  "author": "Nguyen Van A",           // Tên người đăng
-  "content": "Nội dung bài viết hoặc bình luận ở đây...",
-  "url": "https://facebook.com/123",  // Link gốc để đối chiếu
-  "created_at": "2024-03-10T10:00:00Z", // Thời gian bài đăng (ISO Format)
-  
-  "flow_type": "interaction",         // QUAN TRỌNG: spam | interaction | recommendation
-  
-  "analysis": {                       // Kết quả xử lý AI/Logic
-    "is_spam": false,                 // true nếu là luồng Spam xác định
-    "sentiment": "positive",          // positive | negative | neutral
-    "score": 0.85,                    // Độ tin cậy của AI (0 đến 1)
-    "tags": ["khuyến mãi", "than phiền"] 
+[
+  {
+    "source_platform": "facebook",
+    "author": "Nguyen Van A",
+    "content": "Sản phẩm của Brand X dạo này chất lượng kém quá, dùng được 2 ngày đã hỏng rồi!",
+    "url": "https://facebook.com/posts/101",
+    "created_at": "2024-03-10T08:30:00Z",
+    "flow_type": "interaction",
+    "analysis": {
+      "is_spam": false,
+      "sentiment": "negative",
+      "score": 0.92,
+      "tags": ["chất lượng", "than phiền"]
+    },
+    "metadata": {
+      "likes": 45,
+      "comments": 12,
+      "shares": 3
+    }
   },
-  
-  "metadata": {                       // Các thông số phụ
-    "likes": 120,
-    "comments": 45,
-    "shares": 10
+  {
+    "source_platform": "twitter",
+    "author": "Bot_Sale_99",
+    "content": "CƠ HỘI NHẬN IPHONE 15 MIỄN PHÍ!!! CLICK NGAY VÀO LINK TRÚNG THƯỞNG 100%: http://bit.ly/spam-link",
+    "url": "https://twitter.com/status/202",
+    "created_at": "2024-03-10T09:00:00Z",
+    "flow_type": "spam",
+    "analysis": {
+      "is_spam": true,
+      "sentiment": "neutral",
+      "score": 0.99,
+      "tags": ["quảng cáo", "lừa đảo"]
+    },
+    "metadata": {
+      "likes": 0,
+      "comments": 0,
+      "shares": 150
+    }
+  },
+  {
+    "source_platform": "news",
+    "author": "Báo Đầu Tư",
+    "content": "Thương hiệu Brand X lọt top 10 doanh nghiệp có chỉ số tín nhiệm cao nhất năm 2024.",
+    "url": "https://baodautu.vn/kinh-te/303",
+    "created_at": "2024-03-10T10:15:00Z",
+    "flow_type": "recommendation",
+    "analysis": {
+      "is_spam": false,
+      "sentiment": "positive",
+      "score": 0.88,
+      "tags": ["tín nhiệm", "tăng trưởng"]
+    },
+    "metadata": {
+      "likes": 500,
+      "comments": 25,
+      "shares": 120
+    }
+  },
+  {
+    "source_platform": "tiktok",
+    "author": "KOL_Reviewer",
+    "content": "Mọi người hỏi mình về Brand X nhiều quá, hôm nay mình làm video review chi tiết nhé, nói chung là ổn trong tầm giá.",
+    "url": "https://tiktok.com/video/404",
+    "created_at": "2024-03-10T14:20:00Z",
+    "flow_type": "interaction",
+    "analysis": {
+      "is_spam": false,
+      "sentiment": "positive",
+      "score": 0.75,
+      "tags": ["review", "đánh giá"]
+    },
+    "metadata": {
+      "likes": 12000,
+      "comments": 850,
+      "shares": 400
+    }
   }
-}
+]
