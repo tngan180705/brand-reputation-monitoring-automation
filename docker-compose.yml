@@ -1,0 +1,34 @@
+version: '3.8'
+
+services:
+  # Cơ sở dữ liệu MongoDB
+  mongodb:
+    image: mongo:latest
+    container_name: mongodb_brand
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    environment:
+      - MONGO_INITDB_DATABASE=brand_reputation_db
+
+  # Công cụ quản lý Workflow n8n
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n_brand
+    restart: always
+    ports:
+      - "5678:5678"
+    environment:
+      - N8N_HOST=localhost
+      - NODE_ENV=production
+      - WEBHOOK_URL=http://localhost:5678/
+    volumes:
+      - n8n_data:/home/node/.n8n
+    depends_on:
+      - mongodb
+
+volumes:
+  mongo_data:
+  n8n_data:
