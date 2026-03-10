@@ -15,6 +15,12 @@ Hệ thống được thiết kế theo mô hình Microservices phân tách rõ 
 
 ---
 
+## **Cách chạy dự án bằng Docker**
+Ghi rõ lệnh: docker-compose up -d.
+Thêm sơ đồ cây thư mục (như mình đã vẽ cho bạn ở trên) để mọi người biết bỏ code vào đâu.
+
+---
+
 ## 🛠️ Công nghệ sử dụng (Tech Stack)
 - **Languages:** Python 3.9+, Node.js 18+
 - **Database:** MongoDB (NoSQL)
