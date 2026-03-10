@@ -213,3 +213,20 @@ build/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# --- Docker & n8n additions ---
+# Bỏ qua dữ liệu thực tế của Database lưu trong volume cục bộ (nếu có tạo folder)
+/data/db/
+/mongo_data/
+
+# Bỏ qua dữ liệu cấu hình cá nhân của n8n (tránh lộ thông tin đăng nhập n8n local)
+/n8n_data/
+.n8n/
+
+# Bỏ qua các file cấu hình Docker không cần thiết
+.docker/
+docker-compose.override.yml
+
+# Bỏ qua các file log hệ thống
+*.log
+logs/
