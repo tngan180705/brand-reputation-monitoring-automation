@@ -26,16 +26,33 @@ Hệ thống được thiết kế theo mô hình Microservices phân tách rõ 
 ---
 
 ## 📂 Cấu trúc thư mục (Folder Structure)
-```text
-brand-reputation-automation/
-├── src/
-│   ├── backend/             # Python - Xử lý dữ liệu & AI
-│   │   ├── scrapers/        # Script thu thập dữ liệu
-│   │   └── analysis/        # Model phân tích cảm xúc
-│   ├── web-api/             # Node.js - API & Server
-│   └── frontend/            # React/Next.js - Dashboard
-├── data/                    # Dữ liệu mẫu (JSON/CSV)
-├── docs/                    # Tài liệu hệ thống & Sơ đồ DB
-├── .github/workflows/       # GitHub Actions Automation
-├── .env.example             # File mẫu cấu hình biến môi trường
-└── README.md
+brand-reputation-monitoring/
+├── .github/                # GitHub Actions (Tự động hóa CI/CD)
+│   └── workflows/          # Các file .yml chạy tự động
+├── data/                   # Dữ liệu mẫu & Dữ liệu thô
+│   └── sample_mention.json # File JSON mẫu đã chốt
+├── docs/                   # Tài liệu dự án
+│   ├── database_schema.md  # Quy định cấu trúc MongoDB
+│   └── system_architecture.png
+├── n8n/                    # Quản lý Workflow n8n
+│   └── workflows/          # Lưu các file .json export từ n8n
+├── src/                    # MÃ NGUỒN CHÍNH
+│   ├── backend/            # Luồng Python (Spam & Tương tác)
+│   │   ├── analysis/       # Code AI Phân tích cảm xúc (Bạn B)
+│   │   ├── scrapers/       # Code Cào dữ liệu & Lọc Spam (Bạn A - Lead)
+│   │   │   └── spam_detector.py
+│   │   └── utils/          # Hàm dùng chung (Kết nối DB)
+│   │       └── db_connection.py
+│   ├── web_api/            # Luồng Node.js (Server API - Bạn C)
+│   │   ├── controllers/
+│   │   ├── models/
+│   │   └── routes/
+│   └── frontend/           # Luồng React.js (Giao diện - Bạn C)
+│       ├── src/components/
+│       └── src/pages/
+├── .env                    # Biến môi trường (Local - KHÔNG PUSH)
+├── .env.example            # Bản mẫu biến môi trường (CẦN PUSH)
+├── .gitignore              # Khai báo các file Git cần bỏ qua
+├── docker-compose.yml      # Cấu hình Docker (Mongo, n8n)
+├── README.md               # Giới thiệu tổng quan dự án
+└── requirements.txt        # Thư viện Python cần cài đặt
