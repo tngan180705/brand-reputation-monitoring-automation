@@ -72,3 +72,9 @@ JavaScript: Sử dụng JSDoc (/** ... */).
 8. Tự động hóa (Automation) & Bảo mật
 GitHub Actions: Các script chạy tự động cào dữ liệu hàng ngày phải đặt trong .github/workflows/.
 GitHub Secrets: Các API Key dùng cho Automation phải cấu hình trong mục Settings > Secrets của GitHub, không commit vào file .yml.
+
+9.Quy tắc Docker
+Không thay đổi Port trong docker-compose.yml trừ khi được Lead đồng ý.
+
+10. Quy tắc n8n
+Mọi workflow mới phải được Export ra file .json và lưu vào thư mục n8n/workflows/ trước khi commit.
