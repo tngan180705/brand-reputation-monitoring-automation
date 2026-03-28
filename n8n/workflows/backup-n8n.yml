@@ -1,0 +1,32 @@
+name: Tự động sao lưu n8n Workflow
+
+on:
+  push:
+    branches:
+      - main  # Chạy mỗi khi bạn push code mới lên nhánh main
+  schedule:
+    - cron: '0 0 * * *' # Tự động chạy vào 00:00 mỗi ngày (giờ UTC)
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Kiểm tra mã nguồn
+        uses: actions/checkout@v3
+
+      - name: Ghi chú lại thời gian sao lưu
+        run: |
+          echo "Bản sao lưu ngày: $(date)" > last_backup_time.txt
+          
+      - name: Xác nhận thay đổi
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action Bot"
+          git add .
+          git commit -m "Auto-backup: Cập nhật workflow mới nhất $(date)" || echo "Không có thay đổi nào để commit"
+          
+      - name: Đẩy code lên GitHub
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: main
