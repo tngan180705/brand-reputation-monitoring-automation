@@ -1,0 +1,1 @@
+function initFilters() { console.log("Filter module ready"); }
