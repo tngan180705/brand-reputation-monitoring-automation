@@ -2,21 +2,26 @@ import express from 'express';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import path from 'path';
+import cors from 'cors'; // 1. Import thêm CORS
 import { fileURLToPath } from 'url';
 
-// 1. Cấu hình
+// Cấu hình đường dẫn
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// 2. Kết nối MongoDB
+// 2. Kích hoạt CORS (Cho phép Frontend truy cập API)
+app.use(cors()); 
+app.use(express.json());
+
+// 3. Kết nối MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/highlands_db')
     .then(() => console.log('✅ Connected to MongoDB'))
     .catch(err => console.error('❌ MongoDB connection error:', err));
 
-// 3. Định nghĩa Schema (Dùng lại cái cũ)
+// 4. Định nghĩa Schema
 const Mention = mongoose.model('Mention', new mongoose.Schema({
     platform: String,
     author: String,
@@ -26,17 +31,17 @@ const Mention = mongoose.model('Mention', new mongoose.Schema({
     processedAt: Date
 }));
 
-// 4. API Endpoint: Lấy tất cả dữ liệu
+// 5. API Endpoint: Lấy tất cả dữ liệu
 app.get('/api/mentions', async (req, res) => {
     try {
-        const data = await Mention.find().sort({ processedAt: -1 }); // Mới nhất lên đầu
+        const data = await Mention.find().sort({ processedAt: -1 });
         res.json(data);
     } catch (err) {
         res.status(500).json({ message: err.message });
     }
 });
 
-// 5. API Endpoint: Thống kê nhanh (Cho Dashboard)
+// 6. API Endpoint: Thống kê nhanh
 app.get('/api/stats', async (req, res) => {
     try {
         const total = await Mention.countDocuments();
