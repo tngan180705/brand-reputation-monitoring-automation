@@ -1,0 +1,1 @@
+function initCharts(data) { console.log("Chart module ready"); }
