@@ -1,76 +1,148 @@
-// 1. Khai báo biến toàn cục để Member 2 và 3 có thể truy cập
+// 1. Khai báo biến toàn cục
 window.allData = [];
+let sentimentChart, platformChart; // Đổi tên cho khớp với HTML mới
 
-// 2. Hàm lấy dữ liệu từ Backend (API bạn đã chạy ở cổng 5000)
+// Hàm bổ trợ: Tìm giá trị bất kể tên cột viết hoa hay thường (Tránh lỗi do MongoDB/n8n format khác nhau)
+function getVal(obj, keyName) {
+    if (!obj) return "";
+    const actualKey = Object.keys(obj).find(k => k.toLowerCase().replace(/\s/g, '') === keyName.toLowerCase());
+    return actualKey ? String(obj[actualKey]).trim() : "";
+}
+
+// 2. Hàm lấy dữ liệu từ API
 async function fetchData() {
     try {
         const response = await fetch('http://localhost:5000/api/mentions');
         window.allData = await response.json();
         
-        console.log("✅ Đã tải dữ liệu:", window.allData.length, "dòng");
+        console.log("✅ Dữ liệu Highlands AI:", window.allData);
         
-        // 3. Sau khi có dữ liệu, ra lệnh cho các bộ phận khác hoạt động
-        renderStats();
-        renderTable(window.allData);
+        renderKPI();
+        renderTable();
+        renderCharts(window.allData);
         
-        // Gọi hàm của Member 2 (nếu họ đã viết xong)
-        if (typeof initCharts === 'function') initCharts(window.allData);
-        
-        // Gọi hàm của Member 3 (nếu họ đã viết xong)
-        if (typeof initFilters === 'function') initFilters();
+        // Re-render các icon của Lucide sau khi dữ liệu mới đổ vào
+        if (window.lucide) lucide.createIcons();
 
     } catch (error) {
-        console.error("❌ Lỗi kết nối API:", error);
-        alert("Không thể kết nối Backend. Hãy chắc chắn server.js đang chạy!");
+        console.error("❌ Lỗi kết nối Backend:", error);
     }
 }
 
-// 4. Hàm render bảng thô (Khung xương)
-function renderTable(data) {
-    const tableBody = document.getElementById('main-table-body');
-    tableBody.innerHTML = data.map(item => `
-        <tr class="border-b hover:bg-gray-50">
-            <td class="p-3 text-sm font-bold uppercase">${item.platform}</td>
-            <td class="p-3 text-sm">${item.author}</td>
-            <td class="p-3 text-xs text-gray-600">${item.content}</td>
-            <td class="p-3">
-                <span class="px-2 py-1 rounded text-xs ${getSentimentClass(item.sentiment)}">
-                    ${item.sentiment}
-                </span>
-            </td>
-        </tr>
-    `).join('');
-}
+// 3. Render 3 thẻ KPI chính
+function renderKPI() {
+    const data = window.allData;
+    const total = data.length;
+    const pos = data.filter(d => getVal(d, 'sentiment').toLowerCase().includes('pos')).length;
+    const neg = data.filter(d => getVal(d, 'sentiment').toLowerCase().includes('neg')).length;
 
-// Hàm bổ trợ màu sắc
-function getSentimentClass(s) {
-    if (s === 'positive') return 'bg-green-100 text-green-700';
-    if (s === 'negative') return 'bg-red-100 text-red-700';
-    return 'bg-gray-100 text-gray-700';
-}
+    const kpiContainer = document.getElementById('kpi-container');
+    if (!kpiContainer) return;
 
-// 5. Hàm render thống kê nhanh
-function renderStats() {
-    const statsContainer = document.getElementById('stats-summary');
-    const total = window.allData.length;
-    const pos = window.allData.filter(d => d.sentiment === 'positive').length;
-    const neg = window.allData.filter(d => d.sentiment === 'negative').length;
-
-    statsContainer.innerHTML = `
-        <div class="bg-white p-4 rounded shadow border-b-4 border-blue-500">
-            <p class="text-xs font-bold text-gray-400">TỔNG CỘNG</p>
-            <p class="text-2xl font-bold">${total}</p>
+    kpiContainer.innerHTML = `
+        <div class="bg-white p-6 rounded-xl border-b-4 border-blue-500 card-shadow">
+            <p class="text-[11px] font-bold text-gray-400 uppercase tracking-widest">Tổng cộng</p>
+            <h2 class="text-4xl font-bold mt-2 text-gray-800">${total}</h2>
         </div>
-        <div class="bg-white p-4 rounded shadow border-b-4 border-green-500">
-            <p class="text-xs font-bold text-gray-400">TÍCH CỰC</p>
-            <p class="text-2xl font-bold text-green-600">${pos}</p>
+        <div class="bg-white p-6 rounded-xl border-b-4 border-green-500 card-shadow">
+            <p class="text-[11px] font-bold text-green-600 uppercase tracking-widest">Tích cực</p>
+            <h2 class="text-4xl font-bold mt-2 text-green-600">${pos}</h2>
         </div>
-        <div class="bg-white p-4 rounded shadow border-b-4 border-red-500">
-            <p class="text-xs font-bold text-gray-400">TIÊU CỰC</p>
-            <p class="text-2xl font-bold text-red-600">${neg}</p>
+        <div class="bg-white p-6 rounded-xl border-b-4 border-red-500 card-shadow">
+            <p class="text-[11px] font-bold text-red-600 uppercase tracking-widest">Tiêu cực</p>
+            <h2 class="text-4xl font-bold mt-2 text-red-600">${neg}</h2>
         </div>
     `;
 }
 
-// Khởi chạy
-fetchData();
+// 4. Render Bảng dữ liệu chi tiết (Dưới biểu đồ)
+function renderTable() {
+    const tbody = document.getElementById('data-table');
+    if (!tbody) return;
+
+    // Lấy 5 bản ghi mới nhất
+    const latest = [...window.allData].reverse().slice(0, 5);
+    
+    tbody.innerHTML = latest.map(item => {
+        const sentiment = getVal(item, 'sentiment').toLowerCase();
+        const sentimentClass = sentiment.includes('neg') ? 'bg-red-100 text-red-600' : 
+                              (sentiment.includes('pos') ? 'bg-green-100 text-green-600' : 'bg-gray-100 text-gray-600');
+        
+        return `
+            <tr class="hover:bg-gray-50 transition">
+                <td class="px-8 py-4 font-bold text-blue-600 uppercase text-xs">${getVal(item, 'platform')}</td>
+                <td class="px-8 py-4 text-gray-700">${item.author || item.user || item.User || 'Ẩn danh'}</td>
+                <td class="px-8 py-4 text-gray-600 text-xs leading-relaxed">${getVal(item, 'content')}</td>
+                <td class="px-8 py-4">
+                    <span class="px-2 py-1 rounded text-[10px] font-bold uppercase ${sentimentClass}">
+                        ${sentiment || 'Neutral'}
+                    </span>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// 5. Vẽ Biểu đồ (Cảm xúc & Nền tảng)
+function renderCharts(data) {
+    const ctxSentiment = document.getElementById('sentimentChart');
+    const ctxPlatform = document.getElementById('platformChart');
+    if(!ctxSentiment || !ctxPlatform) return;
+
+    // Xử lý dữ liệu Nền tảng
+    const platformCounts = {};
+    data.forEach(item => {
+        const p = getVal(item, 'platform') || 'Other';
+        platformCounts[p] = (platformCounts[p] || 0) + 1;
+    });
+
+    // Cập nhật Platform Chart (Cột đứng màu Đỏ Highlands)
+    if (platformChart) platformChart.destroy();
+    platformChart = new Chart(ctxPlatform, {
+        type: 'bar',
+        data: {
+            labels: Object.keys(platformCounts),
+            datasets: [{
+                label: 'Số lượng',
+                data: Object.values(platformCounts),
+                backgroundColor: '#B22830',
+                borderRadius: 4
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+        }
+    });
+
+    // Xử lý dữ liệu Cảm xúc
+    const pos = data.filter(d => getVal(d, 'sentiment').toLowerCase().includes('pos')).length;
+    const neg = data.filter(d => getVal(d, 'sentiment').toLowerCase().includes('neg')).length;
+    const neu = data.length - pos - neg;
+
+    // Cập nhật Sentiment Chart (Tròn)
+    if (sentimentChart) sentimentChart.destroy();
+    sentimentChart = new Chart(ctxSentiment, {
+        type: 'pie',
+        data: {
+            labels: ['Tích cực', 'Tiêu cực', 'Trung lập'],
+            datasets: [{
+                data: [pos, neg, neu],
+                backgroundColor: ['#10b981', '#ef4444', '#f59e0b'],
+                borderWidth: 0
+            }]
+        },
+        options: { 
+            responsive: true, 
+            maintainAspectRatio: false, 
+            plugins: { legend: { position: 'bottom' } } 
+        }
+    });
+}
+
+// Khởi chạy khi tải trang
+window.onload = () => {
+    fetchData();
+};
