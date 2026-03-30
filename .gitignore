@@ -5,11 +5,8 @@ __pycache__/
 
 # C extensions
 *.so
-<<<<<<< HEAD
 *.msi
-=======
 
->>>>>>> e95daddefe52439f616d7ad6c841816f94587e2a
 # Distribution / packaging
 .Python
 build/
