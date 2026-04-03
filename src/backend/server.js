@@ -11,6 +11,8 @@ dotenv.config({ path: path.resolve(__dirname, '../../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const N8N_WEBHOOK_URL = "http://localhost:5678/webhook-test/highlands-monitor";
+
 
 // 2. Kích hoạt CORS (Cho phép Frontend truy cập API)
 app.use(cors()); 
@@ -27,8 +29,9 @@ const Mention = mongoose.model('Mention', new mongoose.Schema({
     author: String,
     content: String,
     sentiment: String,
-    topic: String,
-    processedAt: Date
+    urgency: String,
+    ai_reply: String,
+    processedAt: { type: Date, default: Date.now }
 }));
 
 // 5. API Endpoint: Lấy tất cả dữ liệu
@@ -54,6 +57,44 @@ app.get('/api/stats', async (req, res) => {
     }
 });
 
+
+// API tổng hợp xử lý 3 luồng
+app.post('/api/ai/process', async (req, res) => {
+    try {
+        // Nhận thêm trường 'threadType' từ React gửi lên
+        const { platform, author, content, threadType } = req.body; 
+
+        if (!content) return res.status(400).json({ error: "Nội dung không được để trống" });
+
+        console.log(`--- Đang kích hoạt luồng AI: ${threadType || 'Mặc định'} ---`);
+
+        // Bắn dữ liệu sang n8n
+        const response = await fetch(N8N_WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                platform,
+                author,
+                content,
+                threadType: threadType || 'general' // Để Mem 2 dùng Switch phân loại
+            })
+        });
+        if (!response.ok) {
+        throw new Error(`n8n trả về lỗi: ${response.status}`);
+        }
+
+        // Trả kết quả về cho Mem 3 hiển thị thông báo
+        res.status(200).json({ 
+            success: true, 
+            message: "Dữ liệu đã được n8n tiếp nhận thành công!" 
+        });
+
+    } catch (error) {
+        console.error("❌ Lỗi Backend Connector:", error.message);
+        res.status(500).json({ success: false, error: "Hệ thống AI đang bận hoặc lỗi kết nối" });
+    }
+});
+
 app.listen(PORT, () => {
-    console.log(`🚀 Server is running on http://localhost:${PORT}`);
+    console.log(`🚀 Server ready at http://localhost:${PORT}`);
 });
